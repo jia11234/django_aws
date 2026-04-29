@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Session</title>
+    <style>
+    </style>
+</head>
+<body>
+    <h1>입력하세요!</h1>
+    <form onsubmit="event.preventDefault(); question();" method="post" >
+        <input type="text" name="message" id="message">
+        <button type="submit">전송</button>
+    </form>
+    <p>답변:<span id="answer"></span></p>
+<button onclick="showTable()">전체 내역 보기</button>
+
+<div id="history-section" style="display: none; margin-top: 20px;">
+    <h3>전체 대화 내역</h3>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>질문</th>
+                <th>답변</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in history %}
+            <tr>
+                <td>{{ item.question }}</td>
+                <td>{{ item.answer }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+</body>
+<script>
+    async function question() {
+        const message = document.getElementById('message').value;
+        const displayArea = document.getElementById('answer');
+
+        const response = await fetch("/app/question/", { // 장고 주소
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ message: message })
+        });
+
+        const data = await response.json();
+        displayArea.innerText = data.answer;
+    }
+
+    function showTable() {
+        const section = document.getElementById('history-section');
+        
+        // 만약 숨겨져 있으면 보여주고, 보여지고 있으면 다시 숨깁니다 (Toggle)
+        if (section.style.display === "none") {
+            section.style.display = "block";
+        } else {
+            section.style.display = "none";
+        }
+    }
+</script>
+</html>
+
